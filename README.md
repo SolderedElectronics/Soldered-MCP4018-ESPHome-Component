@@ -1,31 +1,16 @@
-# Soldered NAZIV PROIZVODA ESPHome Component
+# Soldered MCP4018 ESPHome Component
 
-| ![Product name](https://upload.wikimedia.org/wikipedia/commons/8/8f/Example_image.svg) |
-| :------------------------------------------------------------------------------------: |
-|                      [NAZIV PROIZVODA](https://www.solde.red/SKU)                      |
+| ![MCP4018 Breakout](https://cms.soldered.com/products/333090/media/333090_featured-photo_5f392d.jpg) |
+| :--------------------------------------------------------------------------------------------------: |
+|                           [MCP4018 Breakout](https://www.solde.red/333090)                           |
 
-OPIS PROIZVODA + LINK NA [Qwiic ecosystem](https://soldered.com/collections/qwiic-ecosystem).
+Breakout board for the Microchip MCP4018 I2C digital potentiometer, with 128 wiper steps and 5k, 10k and 50k ohm
+variants. The board is part of the [Qwiic ecosystem](https://soldered.com/collections/qwiic-ecosystem).
 
-External ESPHome component for NAZIV PROIZVODA.
-
-### Using the template
-
-Before publishing a new component make sure to replace:
-
-- `NAZIV PROIZVODA`, `OPIS PROIZVODA`, product image, and SKU link in this README
-- the `components/soldered_esphome_component_template/` directory name with the real component name
-- `soldered_esphome_component_template` namespace, `SolderedEsphomeComponentTemplate` class name, and `CODEOWNERS` in `__init__.py`, matching names in the `.h`/`.cpp` files and their `#include`
-- `CONFIG_SCHEMA` and `to_code()` in `__init__.py` with the real config options and codegen
-- the `TAG` string and `dump_config()` output in the `.cpp` file
-- `github://SolderedElectronics/<repo>` source path and the sample config in the "Usage" section below
-- `examples/basic.yaml` (rename/add examples as needed, keep `external_components.source.path` pointing at `../components`)
-- `@file`, `@brief`, `@author` Doxygen comments in the `.h`/`.cpp` files to describe the real API
-
-Also make sure to add more examples if the component supports multiple boards/modes (see `Soldered-Inkplate-ESPHome` for a repo with several board variants).
-
-Run `pip install clang-format==13.0.1 && find components -name "*.cpp" -o -name "*.h" | xargs clang-format -i` before committing to auto-format the component against ESPHome's own style (`.clang-format`, copied from the ESPHome core repo). CI runs the same check on every push/PR via `.github/workflows/format_check.yml` and fails on unformatted code. `.github/workflows/build.yml` compiles every YAML under `examples/` on every push/PR.
-
-**Remove this section of README after everything is done!**
+External ESPHome component for the Soldered MCP4018 breakout board. It is a port of the
+[Soldered MCP4018 Arduino library](https://github.com/SolderedElectronics/Soldered-Digipot-MCP4018-Arduino-Library)
+and exposes the wiper as an ESPHome [float output](https://esphome.io/components/output/), so it can be driven by
+`output.set_level`, a template `number`, a `light`, or anything else that takes an output.
 
 ## Repository Contents
 
@@ -38,17 +23,36 @@ Reference this repo directly from your own ESPHome YAML (no need to clone it loc
 
 ```yaml
 external_components:
-  - source: github://SolderedElectronics/<repo>
-    components: [soldered_esphome_component_template]
+  - source: github://SolderedElectronics/Soldered-MCP4018-ESPHome-Component
+    components: [mcp4018]
 
-soldered_esphome_component_template:
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+
+output:
+  - platform: mcp4018
+    id: digipot
+    initial_value: 0.5
 ```
 
-See [`examples/basic.yaml`](examples/basic.yaml) for a full working example.
+An output level of `0.0` - `1.0` maps linearly onto wiper positions `0` - `127`, measured from the GND side of the
+potentiometer.
+
+See [`examples/basic.yaml`](examples/basic.yaml) for a full working example with a 0 - 100 % slider.
+
+### Configuration variables
+
+- **id** (**Required**, [ID](https://esphome.io/guides/configuration-types#config-id)): the ID of the output.
+- **address** (*Optional*, int): I2C address of the chip. Defaults to `0x2F` (fixed on the MCP4018).
+- **initial_value** (*Optional*, float): level (`0.0` - `1.0`) written to the wiper on boot. The MCP4018 wiper is
+  volatile and resets to mid-scale on power-up; if this option is omitted, that power-on value is left untouched.
+- All other options from [Output](https://esphome.io/components/output/#config-output) (`min_power`, `max_power`,
+  `inverted`, ...).
 
 ### Hardware design
 
-You can find hardware design for this board in the _NAZIV PROIZVODA_ hardware repository.
+You can find hardware design for this board in the MCP4018 hardware repositories ([5k](https://github.com/SolderedElectronics/Digipot-5k-MCP4018-breakout-hardware-design), [10k](https://github.com/SolderedElectronics/Digipot-10k-MCP4018-breakout-hardware-design), [50k](https://github.com/SolderedElectronics/Digipot-50k-MCP4018-breakout-hardware-design)).
 
 ### Documentation
 

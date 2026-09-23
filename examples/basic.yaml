@@ -1,5 +1,8 @@
+# Drives the Soldered MCP4018 digital potentiometer breakout board as a float
+# output, with a template number (0 - 100 %) to set the wiper position.
+
 esphome:
-  name: soldered-esphome-component-template-test
+  name: mcp4018-basic
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -8,11 +11,35 @@ esp32:
 
 logger:
   level: DEBUG
+  hardware_uart: UART0
 
 external_components:
   - source:
       type: local
       path: ../components
-    components: [soldered_esphome_component_template]
+    components: [mcp4018]
 
-soldered_esphome_component_template:
+i2c:
+  sda: GPIO8
+  scl: GPIO9
+  scan: true
+
+output:
+  - platform: mcp4018
+    id: digipot
+    address: 0x2F
+    initial_value: 0.5
+
+number:
+  - platform: template
+    name: "Digipot Wiper"
+    min_value: 0
+    max_value: 100
+    step: 1
+    unit_of_measurement: "%"
+    optimistic: true
+    initial_value: 50
+    set_action:
+      - output.set_level:
+          id: digipot
+          level: !lambda "return x / 100.0f;"
